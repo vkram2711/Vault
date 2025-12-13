@@ -93,12 +93,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResp) => {
                     length: password_length
                 });
 
+                // Extract email from alias (handle both object and string cases)
+                let aliasEmail;
+                if (typeof aliasResp.alias === 'string') {
+                    aliasEmail = aliasResp.alias;
+                } else if (aliasResp.alias && typeof aliasResp.alias === 'object') {
+                    aliasEmail = aliasResp.alias.email || aliasResp.alias.alias;
+                } else {
+                    aliasEmail = String(aliasResp.alias || '');
+                }
+
                 // 3) Create identity in vault (optional: user provided display name)
                 const identityResp = await callVault("/identity", "POST", {
                     domain: hostname,
-                    name: display_name || aliasResp.alias.email,
+                    name: display_name || aliasEmail,
                     pii: {
-                        email: aliasResp.alias.email,
+                        email: aliasEmail,
                         phone: null
                     },
                     site_type: "generic",
@@ -109,11 +119,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResp) => {
                 const secretResp = await callVault("/secret", "POST", {
                     item_id: identityResp.item_id,
                     secret_type: "password",
-                    username: aliasResp.alias.email,
+                    username: aliasEmail,
                     password: pwdResp.password
                 });
 
-                sendResp({ ok: true, alias: aliasResp.alias.email, password: pwdResp.password, item_id: identityResp.item_id, secret_id: secretResp.secret_id });
+                sendResp({ ok: true, alias: aliasEmail, password: pwdResp.password, item_id: identityResp.item_id, secret_id: secretResp.secret_id });
             }
 
             else if (msg.action === "autofill_login") {
