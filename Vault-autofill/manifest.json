@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Persona Vault Autofill",
+  "version": "0.1",
+  "description": "Detect login/signup forms, generate aliases & passwords and store them in a local Vault API.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Persona Vault"
+  },
+  "icons": {
+    "48": "icon96.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
